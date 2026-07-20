@@ -3,13 +3,13 @@
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const WPM_STEPS   = [150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900];
+const WPM_STEPS = [150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900];
 const DEFAULT_WPM = 300;
-const ORP_TABLE   = [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
+const ORP_TABLE = [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-function log(msg)  { Zotero.getMainWindow().console.log(`[RSVP] ${msg}`); }
+function log(msg) { Zotero.getMainWindow().console.log(`[RSVP] ${msg}`); }
 function warn(msg) { Zotero.getMainWindow().console.warn(`[RSVP] ${msg}`); }
 
 function getOrpIndex(word) {
@@ -33,7 +33,7 @@ function esc(str) {
 
 function nextWpm(current, dir) {
   const idx = WPM_STEPS.indexOf(current);
-  if (dir === "up")   return WPM_STEPS[Math.min(idx + 1, WPM_STEPS.length - 1)] ?? current;
+  if (dir === "up") return WPM_STEPS[Math.min(idx + 1, WPM_STEPS.length - 1)] ?? current;
   if (dir === "down") return WPM_STEPS[Math.max(idx - 1, 0)] ?? current;
   return current;
 }
@@ -43,7 +43,7 @@ function getCurrentPage(reader) {
   try {
     const win = reader._iframeWindow;
     const app = win?.wrappedJSObject?.PDFViewerApplication
-             || win?.PDFViewerApplication;
+      || win?.PDFViewerApplication;
     return app?.pdfViewer?.currentPageNumber ?? 1;
   } catch (_) { return 1; }
 }
@@ -67,9 +67,9 @@ async function extractPdfText(reader) {
     if (item) {
       const result = await Zotero.PDFWorker.getFullText(item.id, 0, false, item.libraryID);
       if (result) {
-        const pages = Array.isArray(result.text)  ? result.text
-                    : Array.isArray(result.pages) ? result.pages
-                    : null;
+        const pages = Array.isArray(result.text) ? result.text
+          : Array.isArray(result.pages) ? result.pages
+            : null;
 
         if (pages && pages.length > 0) {
           const words = [];
@@ -86,7 +86,7 @@ async function extractPdfText(reader) {
 
         // Flat string fallback
         const flat = typeof result.text === "string" ? result.text
-                   : typeof result    === "string" ? result : "";
+          : typeof result === "string" ? result : "";
         if (flat.trim().length > 50) {
           const words = extractWords(flat);
           log(`PDFWorker flat: ${words.length} words (no page offsets)`);
@@ -243,21 +243,21 @@ const OVERLAY_CSS = `
 
 class RSVPState {
   constructor(win) {
-    this.win         = win;
-    this.words       = [];
+    this.win = win;
+    this.words = [];
     this.pageOffsets = [0];
-    this.idx         = 0;
-    this.wpm         = DEFAULT_WPM;
-    this.playing     = false;
-    this.loaded      = false;
-    this.loading     = false;
-    this.timer       = null;
-    this.mode        = "doc"; // "doc" | "selection"
+    this.idx = 0;
+    this.wpm = DEFAULT_WPM;
+    this.playing = false;
+    this.loaded = false;
+    this.loading = false;
+    this.timer = null;
+    this.mode = "doc"; // "doc" | "selection"
   }
-  get totalWords()  { return this.words.length; }
+  get totalWords() { return this.words.length; }
   get currentWord() { return this.words[this.idx] ?? null; }
   get progressPct() { return this.totalWords ? (this.idx / (this.totalWords - 1)) * 100 : 0; }
-  get intervalMs()  { return Math.floor(60000 / this.wpm); }
+  get intervalMs() { return Math.floor(60000 / this.wpm); }
 
   wordIndexForPage(pageNum) {
     const i = Math.max(0, pageNum - 1);
@@ -268,9 +268,9 @@ class RSVPState {
 // ─── DOM helpers ──────────────────────────────────────────────────────────────
 
 function renderWord(state, doc) {
-  const display  = doc.getElementById("zrsvp-word");
+  const display = doc.getElementById("zrsvp-word");
   const progress = doc.getElementById("zrsvp-progress");
-  const bar      = doc.getElementById("zrsvp-bar-fill");
+  const bar = doc.getElementById("zrsvp-bar-fill");
   if (!display) return;
 
   const word = state.currentWord;
@@ -279,12 +279,12 @@ function renderWord(state, doc) {
   } else {
     const i = getOrpIndex(word);
     display.innerHTML =
-      `<span>${esc(word.slice(0,i))}</span>` +
+      `<span>${esc(word.slice(0, i))}</span>` +
       `<span class="orp">${esc(word[i] ?? "")}</span>` +
-      `<span>${esc(word.slice(i+1))}</span>`;
+      `<span>${esc(word.slice(i + 1))}</span>`;
   }
   if (progress) progress.textContent = state.totalWords ? `${state.idx + 1} / ${state.totalWords}` : "";
-  if (bar)      bar.style.width = `${state.progressPct}%`;
+  if (bar) bar.style.width = `${state.progressPct}%`;
 }
 
 function updatePlayBtn(state, doc) {
@@ -352,12 +352,12 @@ function changeSpeed(state, doc, dir) {
 function loadSelection(selectionText, state, doc) {
   const words = extractWords(selectionText);
   if (words.length === 0) return false;
-  state.words       = words;
+  state.words = words;
   state.pageOffsets = [0];
-  state.idx         = 0;
-  state.loaded      = true;
-  state.loading     = false;
-  state.mode        = "selection";
+  state.idx = 0;
+  state.loaded = true;
+  state.loading = false;
+  state.mode = "selection";
   setSourceBadge(doc, `SELECTION · ${words.length} words`);
   renderWord(state, doc);
   log(`Selection: ${words.length} words`);
@@ -369,8 +369,8 @@ function loadSelection(selectionText, state, doc) {
 async function loadText(reader, state, doc, startPage) {
   if (state.loading) return;
   state.loading = true;
-  state.loaded  = false;
-  state.mode    = "doc";
+  state.loaded = false;
+  state.mode = "doc";
 
   const wordEl = doc.getElementById("zrsvp-word");
   if (wordEl) wordEl.innerHTML = `<span class="hint">Extracting text…</span>`;
@@ -388,10 +388,10 @@ async function loadText(reader, state, doc, startPage) {
       return;
     }
 
-    state.words       = words;
+    state.words = words;
     state.pageOffsets = pageOffsets;
-    state.loaded      = true;
-    state.loading     = false;
+    state.loaded = true;
+    state.loading = false;
 
     const page = startPage ?? getCurrentPage(reader);
     state.idx = state.wordIndexForPage(page);
@@ -459,10 +459,10 @@ async function injectOverlay(reader) {
   const state = new RSVPState(win);
   reader._rsvpState = state;
 
-  doc.getElementById("zrsvp-play").addEventListener("click",  () => togglePlay(state, doc));
-  doc.getElementById("zrsvp-prev").addEventListener("click",  () => stepBack(state, doc));
-  doc.getElementById("zrsvp-next").addEventListener("click",  () => stepForward(state, doc));
-  doc.getElementById("zrsvp-stop").addEventListener("click",  () => stop(state, doc));
+  doc.getElementById("zrsvp-play").addEventListener("click", () => togglePlay(state, doc));
+  doc.getElementById("zrsvp-prev").addEventListener("click", () => stepBack(state, doc));
+  doc.getElementById("zrsvp-next").addEventListener("click", () => stepForward(state, doc));
+  doc.getElementById("zrsvp-stop").addEventListener("click", () => stop(state, doc));
   doc.getElementById("zrsvp-close").addEventListener("click", () => closePanel(reader, doc));
 
   doc.getElementById("zrsvp-frompage").addEventListener("click", () => {
@@ -485,18 +485,32 @@ async function injectOverlay(reader) {
   });
 
   const wpmEl = doc.getElementById("zrsvp-wpm");
-  wpmEl.addEventListener("click",       ()  => changeSpeed(state, doc, "up"));
-  wpmEl.addEventListener("contextmenu", (e) => { e.preventDefault(); changeSpeed(state, doc, "down"); });
+
+  wpmEl.addEventListener("click", (e) => {
+    if (e.button === 0) {
+      changeSpeed(state, doc, "up");
+    }
+  });
+  wpmEl.addEventListener("auxclick", (e) => {
+    if (e.button === 2) {
+      e.preventDefault();
+      changeSpeed(state, doc, "down");
+    }
+  });
+
+  wpmEl.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
 
   doc.addEventListener("keydown", e => {
     if (!panel.classList.contains("open")) return;
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     switch (e.key) {
-      case " ":          e.preventDefault(); togglePlay(state, doc); break;
-      case "ArrowLeft":  e.preventDefault(); stepBack(state, doc); break;
+      case " ": e.preventDefault(); togglePlay(state, doc); break;
+      case "ArrowLeft": e.preventDefault(); stepBack(state, doc); break;
       case "ArrowRight": e.preventDefault(); stepForward(state, doc); break;
-      case "ArrowUp":    e.preventDefault(); changeSpeed(state, doc, "up"); break;
-      case "ArrowDown":  e.preventDefault(); changeSpeed(state, doc, "down"); break;
+      case "ArrowUp": e.preventDefault(); changeSpeed(state, doc, "up"); break;
+      case "ArrowDown": e.preventDefault(); changeSpeed(state, doc, "down"); break;
       case "p": case "P":
         // Jump to current page without closing
         doc.getElementById("zrsvp-frompage")?.click();
@@ -512,7 +526,7 @@ async function injectOverlay(reader) {
 
 function openPanel(reader, doc, selectionText) {
   const panel = doc.getElementById("zrsvp-panel");
-  const btn   = doc.getElementById("zrsvp-toolbar-btn");
+  const btn = doc.getElementById("zrsvp-toolbar-btn");
   if (!panel) return;
   panel.classList.add("open");
   if (btn) btn.classList.add("active");
@@ -531,7 +545,7 @@ function openPanel(reader, doc, selectionText) {
 
 function closePanel(reader, doc) {
   const panel = doc.getElementById("zrsvp-panel");
-  const btn   = doc.getElementById("zrsvp-toolbar-btn");
+  const btn = doc.getElementById("zrsvp-toolbar-btn");
   if (!panel) return;
   panel.classList.remove("open");
   if (btn) btn.classList.remove("active");
@@ -556,16 +570,16 @@ function togglePanel(reader) {
 // ─── Plugin object ────────────────────────────────────────────────────────────
 
 var ZoteroRSVP = {
-  id:          null,
-  version:     null,
-  rootURI:     null,
+  id: null,
+  version: null,
+  rootURI: null,
   initialized: false,
 
   init({ id, version, rootURI }) {
     if (this.initialized) return;
-    this.id          = id;
-    this.version     = version;
-    this.rootURI     = rootURI;
+    this.id = id;
+    this.version = version;
+    this.rootURI = rootURI;
     this.initialized = true;
 
     // Toolbar button — append() MUST be called synchronously
@@ -615,9 +629,9 @@ var ZoteroRSVP = {
     log(`Initialized v${version}`);
   },
 
-  addToWindow(_win) {},
-  addToAllWindows() {},
-  removeFromWindow(_win) {},
+  addToWindow(_win) { },
+  addToAllWindows() { },
+  removeFromWindow(_win) { },
 
   shutdown() {
     try {
@@ -629,9 +643,9 @@ var ZoteroRSVP = {
           doc.getElementById("zrsvp-style")?.remove();
           doc.getElementById("zrsvp-panel")?.remove();
           delete reader._rsvpState;
-        } catch (_) {}
+        } catch (_) { }
       }
-    } catch (_) {}
+    } catch (_) { }
     this.initialized = false;
     log("Shutdown");
   },
