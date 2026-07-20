@@ -9,7 +9,7 @@
       "id": "zotero-rsvp@local",
       "update_url": "https://raw.githubusercontent.com/YOUR_USERNAME/zotero-rsvp/main/update.json",
       "strict_min_version": "7.0",
-      "strict_max_version": "8.*"
+      "strict_max_version": "9.*"
     }
   }
 }
